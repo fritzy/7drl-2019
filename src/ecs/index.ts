@@ -4,15 +4,15 @@ import System from './system';
 
 export default class ECS {
 
-  entities: Map<number, Entity>;
+  entities: Map<string, Entity>;
   systems: Map<string, Array<System>>;
   components: Map<string, typeof Component>;
   entityIdx: number = 0;
 
   //set of entity ids that have been identified as a target for each system
-  systemEntities: Map<System, Set<number>>;
+  systemEntities: Map<System, Set<string>>;
   //set of entity ids that haven't yet been mapped as system targets
-  unmappedEntities: Set<number>;
+  unmappedEntities: Set<string>;
 
   constructor() {
     this.entities = new Map();
@@ -22,17 +22,20 @@ export default class ECS {
     this.unmappedEntities = new Set();
   }
 
-  createEntity(definition: { [index:string]: any }): number {
+  createEntity(definition: { [index:string]: any }): string {
     const entity = new Entity(this, definition);
     this.addEntity(entity);
     this.unmappedEntities.add(entity.id);
     return entity.id;
   }
 
-  addEntity(entity: Entity) {
-    this.entities.set(this.entityIdx, entity);
-    entity.id = this.entityIdx;
-    this.entityIdx++;
+  addEntity(entity: Entity, name?: string) {
+    if (!name) {
+      name = `${this.entityIdx}`;
+      this.entityIdx++;
+    }
+    this.entities.set(name, entity);
+    entity.id = name;
   }
 
   addSystem(group: string, system: System) {
@@ -48,6 +51,7 @@ export default class ECS {
   runSystemGroup(group: string) {
     this.mapEntities();
     const systems = this.systems.get(group);
+    if (!systems) return;
     for (const system of systems) {
       for (const entityId of this.systemEntities.get(system)) {
         system.tick(this.entities.get(entityId));
@@ -56,7 +60,7 @@ export default class ECS {
   }
 
   //remove entity from all system lists of entities that they operate on
-  unmapEntity(id: number) {
+  unmapEntity(id: string) {
     if (!this.entities.has(id)) return;
     for (const entitySet of this.systemEntities.values()) {
       entitySet.delete(id);

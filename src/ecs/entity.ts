@@ -4,7 +4,7 @@ import ECS from '.';
 export default class Entity {
 
   components: Map<string, Component>;
-  id: number;
+  id: string;
   ecs: ECS;
 
   constructor(ecs: ECS, definition?: { [index: string]: any}) {

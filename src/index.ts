@@ -42,7 +42,7 @@ export class Game {
  
     this.mesh = new Three.Mesh( geometry, material );
     //this.scene.add( this.mesh );
-    var light = new Three.AmbientLight( 0x202520 ); // soft white light
+    var light = new Three.AmbientLight( 0x404540 ); // soft white light
     this.scene.add( light );
     this.pointLight = new Three.PointLight( 0xaa7720, 2, 60 );
     this.pointLight.position.set( 0, -9, 8 );
@@ -56,7 +56,7 @@ export class Game {
     this.renderer.shadowMap.enabled = true;
     //this.renderer.shadowMap.type = Three.PCFSoftShadowMap;
 
-    this.renderer.setSize( window.innerWidth, window.innerHeight );
+    this.renderer.setSize( Game.dimensions.width, Game.dimensions.height );
 
     this.container.appendChild( this.renderer.domElement );
 
@@ -79,10 +79,10 @@ export class Game {
       visiblity: 'hidden'
     });
 
+    */
     window.addEventListener('resize', (e) => {
       this.setSize();
     });
-    */
 
   }
 
@@ -123,6 +123,36 @@ export class Game {
   }
 
   setSize() {
+    //this.renderer.setSize( window.innerWidth, window.innerHeight );
+    const res = 1;
+    const width = this.container.clientWidth * res;
+    const height = this.container.clientHeight * res;
+    this.container.style.margin = 'auto';
+    const ratio = width / height;
+
+    let scale = 1;
+    let rset = 'SQUARE';
+
+    if (width < height) {
+      rset = 'TALL';
+    }
+
+    if (ratio < Game.dimensions.ratio) {
+      scale = width / Game.dimensions.width;
+    } else if (ratio > Game.dimensions.ratio) {
+      scale = height / Game.dimensions.height;
+    }
+    /*
+    this.app.renderer.resize(
+      WIDTH * scale,
+      HEIGHT * scale
+    );
+    */
+    this.renderer.domElement.style.width = `${(Game.dimensions.width * scale / res)}px`;
+    this.renderer.domElement.style.height = `${(Game.dimensions.height * scale / res)}px`;
+    this.renderer.setSize(Game.dimensions.width * scale, Game.dimensions.height * scale)
+
+    console.log(`Resolution: ${this.renderer.domElement.style.width} x ${this.renderer.domElement.style.height}`);
   }
 
   onProgress() {
@@ -140,6 +170,8 @@ export class Game {
   startGame() {
     console.log('starting game');
     this.loadAreaEl.style.visibility = 'hidden';
+    this.container.removeChild(this.loadAreaEl)
+    this.setSize();
     this.level = new Level(this);
     this.update();
   }

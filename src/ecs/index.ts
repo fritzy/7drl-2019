@@ -1,12 +1,12 @@
 import Entity from './entity';
-import Component from './component';
+import { Component, BaseComponent } from './component';
 import System from './system';
 
 export default class ECS {
 
   entities: Map<string, Entity>;
   systems: Map<string, Array<System>>;
-  components: Map<string, typeof Component>;
+  componentTypes: Map<string, typeof Component>;
   entityIdx: number = 0;
 
   //set of entity ids that have been identified as a target for each system
@@ -17,14 +17,14 @@ export default class ECS {
   constructor() {
     this.entities = new Map();
     this.systems = new Map();
-    this.components = new Map()
+    this.componentTypes = new Map()
     this.systemEntities = new Map();
     this.unmappedEntities = new Set();
   }
 
-  createEntity(definition: { [index:string]: any }): string {
+  createEntity(definition: { [index:string]: any }, name?: string): string {
     const entity = new Entity(this, definition);
-    this.addEntity(entity);
+    this.addEntity(entity, name);
     this.unmappedEntities.add(entity.id);
     return entity.id;
   }
@@ -39,6 +39,7 @@ export default class ECS {
   }
 
   addSystem(group: string, system: System) {
+    console.log('adding system', group, system)
     if (!this.systems.has(group)) {
       this.systems.set(group, []);
     }
@@ -46,9 +47,11 @@ export default class ECS {
     systems.push(system);
     system.ecs = this;
     this.systemEntities.set(system, new Set());
+    console.log(this.systems)
   }
 
   runSystemGroup(group: string) {
+    console.log(this.entities)
     this.mapEntities();
     const systems = this.systems.get(group);
     if (!systems) return;
@@ -57,6 +60,9 @@ export default class ECS {
         system.tick(this.entities.get(entityId));
       }
     }
+  }
+
+  destroyEntity(id: string) {
   }
 
   //remove entity from all system lists of entities that they operate on
@@ -91,7 +97,7 @@ export default class ECS {
   }
 
   registerComponent(component: typeof Component) {
-    this.components.set(component.name, component)
+    this.componentTypes.set(component.name, component)
   }
 
 }

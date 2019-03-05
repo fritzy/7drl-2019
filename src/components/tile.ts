@@ -1,7 +1,7 @@
-import Component from '../ecs/component';
+import { Component, BaseComponent } from '../ecs/component';
 import Three = require('three');
 
-export interface TileInterface {
+export interface TileComponent extends BaseComponent {
   walls: Array<Three.Mesh>,
   floor: Array<Three.Mesh>,
   wallDecos: Array<Three.Mesh>,
@@ -9,11 +9,14 @@ export interface TileInterface {
   cell?: null | number
 };
 
-export class Tile extends Component {
+export class Tile extends Component implements TileComponent {
+  walls: Array<Three.Mesh>;
+  floor: Array<Three.Mesh>;
+  wallDecos: Array<Three.Mesh>;
+  position: number;
+  cell: null | number;
 
-  _data: TileInterface;
-
-  constructor(input?: TileInterface) {
-    super(input);
+  constructor(tile?: TileComponent) {
+    super(tile);
   }
 }

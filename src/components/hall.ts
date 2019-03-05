@@ -1,23 +1,18 @@
-import Component from '../ecs/component';
-import Character from './character';
-import Entity from '../ecs/entity';
+import { Character } from './character';
+import { BaseComponent, Component } from '../ecs/component';
 
-export interface HallInterface {
-  /*
-  tiles: Array<Entity>;
+export interface HallComponent extends BaseComponent {
+  tiles: Array<string>;
   char: Character | null;
-  floor: Pixi.projection.Container2d;
-  hallContainer: Pixi.projection.Container2d;
-  layers: Array<Pixi.projection.Container2d>;
-  */
-
 }
 
-export class Hall extends Component {
+export class Hall extends Component implements HallComponent {
 
-  _data: HallInterface;
+  tiles: Array<string>;
+  char: Character | null;
 
-  constructor(input?: HallInterface) {
-    super(input);
+  constructor(hall?: HallComponent) {
+    super(hall);
   }
+
 }

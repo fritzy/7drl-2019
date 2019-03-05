@@ -1,14 +1,24 @@
+let idIdx = 0;
 
-export default class Component {
+export interface BaseComponent {
+  type?: string,
+  entityId?: string,
+  componentId?: number
+}
 
-  _data: any;
+export class Component implements BaseComponent {
 
-  constructor(data?: any) {
-    this._data = data;
+  type: string;
+  entityId: string;
+  componentId: number;
+
+  constructor(component?: BaseComponent, entityId?: string) {
+    if (component) {
+      Object.assign(this, component);
+    }
+    this.type = this.constructor.name;
+    if (entityId) this.entityId = entityId;
+    this.componentId = idIdx;
+    idIdx++;
   }
-
-  serialize(): string {
-    return '';
-  }
-
 }

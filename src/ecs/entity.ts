@@ -1,9 +1,8 @@
-import Component from './component';
 import ECS from '.';
 
 export default class Entity {
 
-  components: Map<string, Component>;
+  components: Map<string, any>;
   id: string;
   ecs: ECS;
 
@@ -17,36 +16,25 @@ export default class Entity {
 
   setComponents(definition: { [index: string]: any}) {
     for (const key of Object.keys(definition)) {
-      const component = this.ecs.components.get(key);
-      const instance = new component(definition[key]);
+      const component = this.ecs.componentTypes.get(key);
+      let instance = definition[key];
+      if (!(instance instanceof component)) {
+        instance = new component(definition[key]);
+      }
       this.addComponent(instance);
     }
   }
 
-  addComponents(components: Array<Component>) {
+  addComponents(components: Array<any>) {
     for (const component of components) {
       this.addComponent(component);
     }
   }
 
-  addComponent(component: Component) {
-
-    const cName = component.constructor.name;
-    const cProxy = new Proxy(component, {
-      get: (target: Component, p: string | number | symbol, receiver: any ) => {
-
-        return target._data[p];
-      },
-      set: (target: Component, p: string | number | symbol, value: any, receiver: any): boolean => {
-
-        if (component.hasOwnProperty(p)) {
-          target._data[p] = value;
-          return true;
-        }
-        return false;
-      }
-    });
-    const components = this.components.set(cName, component);
+  addComponent(component: any) {
+    const name = component.type;
+    this.components.set(name, component);
+    component.entityId = this.id;
     //remove this entity from the systems entity target cache
     this.ecs.unmapEntity(this.id);
   }
@@ -55,6 +43,10 @@ export default class Entity {
     this.components.delete(name);
     //remove this entity from the systems entity target cache
     this.ecs.unmapEntity(this.id);
+  }
+
+  destroy() {
+    this.ecs.destroyEntity(this.id);
   }
 
   serialize() {
